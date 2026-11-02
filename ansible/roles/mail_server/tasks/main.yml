@@ -1,0 +1,79 @@
+---
+- name: Set mail server hostname
+  ansible.builtin.hostname:
+    name: mailserver
+- name: Install Postfix and mail utilities
+  ansible.builtin.package:
+    name:
+      - postfix
+      - mailutils
+    state: present
+- name: Configure Postfix
+  ansible.builtin.lineinfile:
+    path: /etc/postfix/main.cf
+    regexp: ^{{ item.key }}\s*=
+    line: '{{ item.key }} = {{ item.value }}'
+  loop: '{{ postfix_main_cf | dict2items }}'
+  notify: Restart Postfix
+- name: Enable Postfix
+  ansible.builtin.service:
+    name: postfix
+    state: started
+    enabled: true
+- name: Install Dovecot
+  ansible.builtin.package:
+    name:
+      - dovecot-core
+      - dovecot-imapd
+      - dovecot-pop3d
+    state: present
+- name: Deploy Dovecot configuration
+  ansible.builtin.template:
+    src: dovecot_conf.j2
+    dest: /etc/dovecot/conf.d/10-mail.conf
+    mode: '0644'
+  notify: Restart Dovecot
+- name: Enable Dovecot
+  ansible.builtin.service:
+    name: dovecot
+    state: started
+    enabled: true
+- name: Install SpamAssassin
+  ansible.builtin.package:
+    name:
+      - spamassassin
+      - spamc
+    state: present
+- name: Deploy SpamAssassin configuration
+  ansible.builtin.template:
+    src: spam_assassin_conf.j2
+    dest: /etc/spamassassin/local.cf
+    mode: '0644'
+  notify: Restart SpamAssassin
+- name: Create dedicated SpamAssassin user
+  ansible.builtin.user:
+    name: spamd
+    shell: /usr/sbin/nologin
+    create_home: true
+    state: present
+- name: Configure Postfix SMTP content filter
+  ansible.builtin.blockinfile:
+    path: /etc/postfix/master.cf
+    marker: '# {mark} ANSIBLE MAIL SMTP FILTER'
+    block: |
+      smtp inet n - - - - smtpd
+        -o content_filter=spamassassin
+  notify: Restart Postfix
+- name: Configure Postfix SpamAssassin pipe
+  ansible.builtin.blockinfile:
+    path: /etc/postfix/master.cf
+    marker: '# {mark} ANSIBLE MAIL SPAMASSASSIN PIPE'
+    block: |
+      spamassassin unix - n n - - pipe
+        user=spamd argv=/usr/bin/spamc -f -e /usr/sbin/sendmail -oi -f ${sender} ${recipient}
+  notify: Restart Postfix
+- name: Enable SpamAssassin service
+  ansible.builtin.service:
+    name: spamd
+    enabled: true
+    state: started

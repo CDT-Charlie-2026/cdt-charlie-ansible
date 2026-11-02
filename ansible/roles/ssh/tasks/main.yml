@@ -1,0 +1,57 @@
+---
+# SSH and SSHD and SSH alias Deployment
+# Author: Aria Shepard (als5265@rit.edu)
+# Date: 9/9/2026
+
+#root can authenticate through SSH
+-  name: Allow root login through SSH
+   lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: '^#?PermitRootLogin'
+      line: 'PermitRootLogin yes'
+      state: present
+      backup: yes
+   notify: restart ssh
+
+#the logic to create the peanutes banner on user login
+-  name: Create Peanut SSH banner
+   copy:
+     dest: /etc/ssh/peanut_banner
+     mode: '0644'
+     content: |
+        =============================================
+               WELCOME TO THE PEANUT SERVER
+        =============================================
+
+                     PEANUTS SSH HOST
+
+              Have a good day, Charlie Brown!
+
+        ============================================
+   notify: restart ssh
+
+#should display the banner created above when users login
+-  name: Enable Peanut SSH banner
+   lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: '^#?Banner'
+      line: 'Banner /etc/ssh/peanut_banner'
+   notify: restart ssh
+
+#client side ssh alias with placeholder IP address for future use with grey team
+-  name: Create SSH client alias
+   blockinfile:
+     path: ~/.ssh/config
+     create: yes
+     mode: '0600'
+     block: |
+       Host peanut
+         HostName 192.0.2.10
+         User root
+         Port 22
+         
+#restart ssh for configuration changes to commit
+-   name: Restart SSH
+    service:
+       name: ssh
+       state: restarted

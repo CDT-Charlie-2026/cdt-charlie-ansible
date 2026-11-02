@@ -1,0 +1,235 @@
+--- 
+# Apache via Docker
+# Author: Dylan Weber (dmw7938@rit.edu)
+# Date: 09/11/2026
+#
+# This playbook deploys and Apache web server in Docker
+
+# ==========================================
+# ======== Debian Docker Repository ========
+# ==========================================
+# This installs the official Docker repository on Debian-based Linux
+
+# Uninstall old/conflicting docker packages
+- name: Uninstall conflicting packages
+  ansible.builtin.apt:
+    name: "{{ docker_unofficial_packages_debian }}"
+    state: absent
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+# Installs the prerequisite packages for adding the Docker repo
+- name: Install Docker repo prerequisites on Debian
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+  # Creates the /etc/apt/keyrings directory
+- name: Create keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+  when: ansible_os_family == "Debian"
+
+  # Download the Docker GPG key
+- name: Download the Docker GPG key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+  when: ansible_os_family == "Debian"
+
+  # Adds the Docker repository to /etc/apt/sources.list.d
+  # ansible.builtin.apt_repository is deprecated in favor of the below module
+- name: Add Docker repository on Debian
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: deb
+    uris: "https://download.docker.com/linux/{{ ansible_distribution | lower }}"
+    suites: "{{ ansible_distribution_release }}"
+    components: stable
+    architectures: amd64
+    signed_by: /etc/apt/keyrings/docker.asc
+    state: present
+  when: ansible_os_family == "Debian"
+
+# ==========================================
+# ========= RHEL Docker Repository =========
+# ==========================================
+# This installs the official Docker repository on RHEL-based Linux
+
+# Uninstall old/conflicting Docker packages
+- name: Uninstall conflicting packages
+  ansible.builtin.dnf:
+    name: "{{ docker_unofficial_packages_redhat }}"
+    state: absent
+    update_cache: true
+  when: ansible_os_family == "RedHat"
+
+# Install dnf-plugins-core to manage dnf repositories
+- name: Install dnf-plugins-core
+  ansible.builtin.dnf:
+    name: dnf-plugins-core
+    state: present
+    update_cache: true
+  when: ansible_os_family == "RedHat"
+
+# Add the Docker repository to dnf
+- name: Add the Docker repository on RHEL
+  ansible.builtin.yum_repository:
+    name: docker.ce
+    description: Docker CE Stable
+    baseurl: "https://download.docker.com/linux/{{ ansible_distribution | lower }}/docker-ce.repo"
+    enabled: true
+    gpgcheck: true
+    gpgkey: "https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg"
+  when: ansible_os_family == "RedHat"
+
+# ==========================================
+# ========== Docker Installation ===========
+# ==========================================
+# This will install the docker packages given by the Docker repo we
+# just installed. They are the same packages, but different package
+# managers are used, so we will need two tasks
+
+# Installs the Docker packages on Debian-based hosts
+- name: Install Docker on Debian
+  ansible.builtin.apt:
+    name: "{{ docker_official_packages }}"
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+# Installs the Docker packages on RHEL-based hosts
+- name: Install Docker on RedHat
+  ansible.builtin.dnf:
+    name: "{{ docker_official_packages }}"
+    state: present
+    update_cache: true
+  when: ansible_os_family == "RedHat"
+
+# ==========================================
+# ======== Enable the Docker service =======
+# ==========================================
+# This enables and starts the Docker service on all hosts.
+# Since systemd is universal on most Linux distributions,
+# this can be one task
+
+- name: Enable and start Docker service
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: restarted
+
+# ==========================================
+# ======== Create Apache directories =======
+# ==========================================
+# This creates the necessary directories for Docker to link the
+# host to the container and enable persistent data via Docker volumes
+
+# This loops through a list of directories to create all under /opt/apache
+# and creates them all
+- name: Create Apache deployment directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ apache_dir }}"
+    - "{{ apache_dir }}/html"
+    - "{{ apache_dir }}/conf"
+    - "{{ apache_dir }}/logs"
+
+# ==========================================
+# ================ Feature 1 ===============
+# ========== Deploy custom website =========
+# ==========================================
+# This deploys a custom html file and image to create a website related to our competition
+
+# Copies the contents of files/website into /opt/apache/html
+- name: Deploy custom Apache website
+  ansible.builtin.copy:
+    src: website/
+    dest: "{{ apache_dir }}/html/"
+    mode: "0644"
+
+# ==========================================
+# =============== Feature 2 ================
+# ====== Custom Apache configuration =======
+# ==========================================
+# This deploys a custom configuration file to manage the configuration of Apache
+
+# Copies files/httpd-custom.conf into /opt/apache/conf/httpd-custom.conf
+- name: Deploy custom Apache configuration
+  ansible.builtin.copy:
+    src: httpd-custom.conf
+    dest: "{{ apache_dir }}/conf/httpd-custom.conf"
+    mode: "0644"
+
+# ==========================================
+# ======= Deploy Docker Compose file =======
+# ==========================================
+# This deploys a Docker Compose file to easily deploy Apache on the server
+
+# Copies files/compose.yml into /opt/apache/compose.yml
+- name: Deploy Docker Compose configuration
+  ansible.builtin.copy:
+    src: compose.yml
+    dest: "{{ apache_dir }}/compose.yml"
+    mode: "0644"
+
+# ==========================================
+# =============== Feature 3 ================
+# ======== Persistent Apache logs ==========
+# ==========================================
+# Within the compose.yml file, there is a volume created
+# for logs. This allows logs to persist on the host even when
+# the container is destroyed or turned off. There is no code
+# for this feature (See files/compose.yml)
+
+# ==========================================
+# ========= Start Apache Container =========
+# ==========================================
+# This starts the Apache container using the compose.yml file that was
+# copied to the target earlier
+
+# Starts the Apache container using Docker Compose
+- name: Start Apache container
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: "{{ apache_dir }}"
+  # Saves output of command to apache_compose variable
+  register: apache_compose
+  # Only reports a change when the below are included in the output
+  changed_when: >
+    'Created' in apache_compose.stdout or
+    'Started' in apache_compose.stdout or
+    'Recreated' in apache_compose.stdout
+
+# ==========================================
+# ========= Verify container state =========
+# ==========================================
+# This verifies that the container was created and is currently running,
+# printing the status to the terminal
+
+# Uses docker compose ps to list running containers tied to the working directory (/opt/apache)
+# In effect, this tells us whether or not Apache is running
+- name: Check Apache container state
+  ansible.builtin.command:
+    cmd: docker compose ps
+    chdir: "{{ apache_dir }}"
+  # Saves output to apache_status variable
+  register: apache_status
+  # Tells ansible to never report a changed state (i.e., only shows ok or failed).
+  # This is only reading system information, so nothing will be changed
+  changed_when: false
+
+# Displays the Apache container state in the terminal
+- name: Display Apache container state
+  ansible.builtin.debug:
+    var: apache_status.stdout

@@ -1,0 +1,68 @@
+---
+# Telnet setup
+# Name: Nathan peck
+# Email: nsp7941@rit.edu
+# Date: 09-11-2026
+
+- name: "Install telnet and other packages"
+  ansible.builtin.apt:
+    name: "{{ telnet_packages }}"
+    state: present
+    update_cache: true
+
+# Pushes a warning banner shown to anyone connecting via telnet.
+- name: "Deploy login warning banner with owner/group/permissions"
+  ansible.builtin.copy:
+    content: "{{ banner_text }}"
+    dest: "{{ banner_path }}"
+    owner: "{{ banner_owner }}"
+    group: "{{ banner_group }}"
+    mode: "{{ banner_mode }}"
+  register: banner_result
+
+- name: "Config xinetd service"
+  ansible.builtin.copy:
+    content: |
+      service telnet
+      {
+          disable         = no
+          flags           = REUSE
+          socket_type     = stream
+          wait            = no
+          user            = root
+          server          = /usr/sbin/in.telnetd
+          log_on_failure  += USERID
+          port            = {{ telnet_port }}
+          banner          = {{ banner_path }}
+      }
+    dest: /etc/xinetd.d/telnet
+    owner: root
+    group: root
+    mode: "0644"
+  register: xinetd_config_result
+
+- name: "Start and enable xinetd service"
+  ansible.builtin.systemd:
+    name: xinetd
+    state: started
+    enabled: true
+
+# Restarts xinetd only if the banner or the service config actually changed,
+- name: "Restart xinetd to apply config changes"
+  ansible.builtin.systemd:
+    name: xinetd
+    state: restarted
+  when: banner_result.changed or xinetd_config_result.changed
+
+# Firewall rule that opens the telnet port only to a specified subnet
+- name: "Allow telnet port from admin subnet"
+  community.general.ufw:
+    rule: allow
+    port: "{{ telnet_port | string }}"
+    proto: tcp
+    src: "{{ admin_cidr }}"
+
+- name: "Ensure ufw is enabled"
+  community.general.ufw:
+    state: enabled
+  when: telnet_enable_ufw | default(false) | bool

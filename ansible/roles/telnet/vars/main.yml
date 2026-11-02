@@ -1,0 +1,26 @@
+  # Telnet vars
+  # Name: Nathan Peck
+  # Email: nsp7941@rit.edu
+  # Date: 09-11-2026
+
+  # packages needed to install and run telnet
+  telnet_packages:
+    - telnetd          
+    - xinetd            
+    - ufw              # firewall 
+
+
+  # banner file
+  telnet_port: 23
+  banner_path: /etc/issue.net
+  banner_owner: root
+  banner_group: root
+  banner_mode: "0644"
+  banner_text: |
+    ***************************************************
+    *  AUTHORIZED USE ONLY - CDT Competition Target    *
+    *  All activity on this system may be monitored.   *
+    ***************************************************
+
+  # firewall rule, needs config if used in competition
+  admin_cidr: 10.150.0.0/24

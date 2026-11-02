@@ -1,0 +1,17 @@
+---
+- name: Allow inbound ICMPv4 echo requests
+  ansible.windows.win_powershell:
+    script: |
+      $name = 'CDT-Allow-ICMPv4-Echo'
+      $rule = Get-NetFirewallRule -Name $name -ErrorAction SilentlyContinue
+      if ($null -eq $rule) {
+        New-NetFirewallRule -Name $name -DisplayName 'CDT ICMPv4 Echo' `
+          -Direction Inbound -Action Allow -Protocol ICMPv4 -IcmpType 8 `
+          -Profile Any | Out-Null
+        $Ansible.Changed = $true
+      } elseif ($rule.Enabled -ne 'True') {
+        Enable-NetFirewallRule -Name $name
+        $Ansible.Changed = $true
+      } else {
+        $Ansible.Changed = $false
+      }

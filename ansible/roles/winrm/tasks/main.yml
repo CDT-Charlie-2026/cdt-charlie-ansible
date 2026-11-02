@@ -1,0 +1,18 @@
+---
+- name: Enable and start WinRM
+  ansible.windows.win_service:
+    name: WinRM
+    start_mode: auto
+    state: started
+- name: Ensure the WinRM HTTP listener exists
+  ansible.windows.win_powershell:
+    script: |
+      $listener = Get-ChildItem WSMan:\localhost\Listener | Where-Object {
+        (Get-Item "$($_.PSPath)\Transport").Value -eq 'HTTP'
+      }
+      if (-not $listener) {
+        winrm quickconfig -quiet | Out-Null
+        $Ansible.Changed = $true
+      } else {
+        $Ansible.Changed = $false
+      }

@@ -1,0 +1,30 @@
+---
+- name: Install Active Directory Domain Services and DNS
+  ansible.windows.win_feature:
+    name:
+      - AD-Domain-Services
+      - DNS
+    state: present
+    include_management_tools: true
+  register: ad_features
+- name: Reboot if AD DS feature installation requires it
+  ansible.windows.win_reboot: null
+  when: ad_features.reboot_required
+- name: Create or ensure peanuts.local forest exists
+  microsoft.ad.domain:
+    dns_domain_name: peanuts.local
+    domain_netbios_name: PEANUTS
+    safe_mode_password: '{{ ad_safe_mode_password }}'
+    reboot: true
+  no_log: true
+- name: Set domain controller's DNS client to itself
+  ansible.windows.win_dns_client:
+    adapter_names: '*'
+    dns_servers:
+      - 10.{{ lan_octet }}.1.2
+- name: Create AD-integrated reverse DNS zone
+  ansible.windows.win_dns_zone:
+    name: 1.{{ lan_octet }}.10.in-addr.arpa
+    type: primary
+    replication: forest
+    state: present

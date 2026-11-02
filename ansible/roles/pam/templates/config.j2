@@ -1,0 +1,17 @@
+# Author: Willis Martin wrm3207@rit.edu
+# Date: 9/11/2026
+
+# Minimum acceptable password length
+minlen = {{ pam_min_length }}
+
+# Minimum number of character classes required (upper, lower, digit, other)
+minclass = {{ pam_min_complexity_classes }}
+
+# Max number of consecutive identical characters allowed (0 = no limit)
+maxrepeat = 3
+
+# Reject passwords that are the username, or a reverse/case-change of it
+usercheck = 1
+
+# Reject dictionary-based passwords where possible (uses cracklib)
+dictcheck = 1

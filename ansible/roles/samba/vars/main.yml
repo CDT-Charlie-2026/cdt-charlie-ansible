@@ -1,0 +1,6 @@
+smb_share_path: /srv/samba/snoopy
+
+greyteam_user: greyteam
+greyteam_ssh_keys:
+    - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKMRGzOJgMdkyhYT2J+LPX8+Opo9uEvzM2I/fm23wO0t bvill@yuggoth"
+    - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCjEVVXkbfQO0Gf3iyQmjkMDxlykorEtEZenerIKdZA8Z840M+jyut5vAZW3FY1/xNQE0P8fawKuzOl2HH3sX/+3uZXp8n9lmgHroxCnEb1H07i0gZ1J7vuIReXpxJU0OTJFw4Q7tu2GdxKsUTsO7uil76ktVuBSw74dVzV+qBz8YEVXQqhbHg0m8/6EHeyQPr8/4kzifEbNTCNbnJXIOeLreaQK3iSzQWZlKWZ+y0ty5YXQ/e9pf9vfFatIUSj0iFIZI7L/UaDvUg/yhNAvxUtAqPQ68SewPjfukV82xeDTzwquWNw6GuxTKejjYJqFymuFVIQ4zgOxgHaOXK8RPSv"

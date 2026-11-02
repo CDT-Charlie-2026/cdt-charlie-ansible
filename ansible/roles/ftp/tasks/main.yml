@@ -1,0 +1,69 @@
+---
+# FTP Deployment
+# Name: Ryan Tagen
+# Email: rst4035@rit.edu
+# Date: 09-11-2026
+
+# Install vsftpd
+- name: Install vsftpd
+  ansible.builtin.apt:
+    name: "{{ ftp_package }}"
+    state: present
+    update_cache: true
+
+# Feature 1: FTP User Access Control
+
+# 1A: Create a dedicated group for FTP users
+- name: Create FTP group
+  ansible.builtin.group:
+    name: "{{ ftp_group }}"
+    state: present
+
+# 1B: Create a restricted FTP user
+- name: Create restricted FTP user
+  ansible.builtin.user:
+    name: "{{ ftp_user }}"
+    group: "{{ ftp_group }}"
+    home: "{{ ftp_home }}"
+    shell: /usr/sbin/nologin
+    password: "{{ ftp_password }}"
+    create_home: true
+    state: present
+
+# Feature 2: FTP Directory Access Control
+
+# 2A: Create the FTP home directory
+- name: Create FTP home directory
+  ansible.builtin.file:
+    path: "{{ ftp_home }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+# 2B: Create a restricted upload directory
+- name: Create FTP upload directory
+  ansible.builtin.file:
+    path: "{{ ftp_home }}/upload"
+    state: directory
+    owner: "{{ ftp_user }}"
+    group: "{{ ftp_group }}"
+    mode: '0750'
+
+# Feature 3: FTP Security Configuration
+
+# 3A and 3B: Deploy secure vsftpd configuration
+- name: Configure vsftpd security settings
+  ansible.builtin.copy:
+    src: vsftpd.conf
+    dest: "{{ ftp_config }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+# Start and enable the FTP service
+- name: Start and enable FTP service
+  ansible.builtin.service:
+    name: "{{ ftp_service }}"
+    state: started
+    enabled: true

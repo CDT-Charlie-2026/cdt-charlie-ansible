@@ -1,0 +1,9 @@
+# Local Ansible Vault password files (encrypted vault files belong in Git).
+.vault-pass
+.vault-password
+.vault_pass
+.vault_password
+.vault-pass.txt
+.vault-password.txt
+.vault_pass.txt
+.vault_password.txt

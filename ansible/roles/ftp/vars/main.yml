@@ -9,3 +9,4 @@ ftp_config: /etc/vsftpd.conf
 ftp_group: ftpusers
 ftp_user: ftpuser
 ftp_home: /srv/ftp
+ftp_password: "{{ vault_linux_password }}"

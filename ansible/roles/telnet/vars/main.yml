@@ -23,4 +23,4 @@
     ***************************************************
 
   # firewall rule, needs config if used in competition
-  admin_cidr: 10.150.0.0/24
+  admin_cidr: 192.168.10.0/24

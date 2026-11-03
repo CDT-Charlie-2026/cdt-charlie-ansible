@@ -1,0 +1,8 @@
+---
+# deploy.yaml
+
+- name: Execute Linux playbook
+  ansible.builtin.import_playbook: linux.yaml
+  
+- name: Execute Windows playbook
+  ansible.builtin.import_playbook: windows.yaml

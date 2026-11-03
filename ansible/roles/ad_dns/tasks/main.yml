@@ -14,17 +14,17 @@
   microsoft.ad.domain:
     dns_domain_name: peanuts.local
     domain_netbios_name: PEANUTS
-    safe_mode_password: '{{ ad_safe_mode_password }}'
+    safe_mode_password: '{{ ad_safe_mode_password }}' # From the vault
     reboot: true
   no_log: true
 - name: Set domain controller's DNS client to itself
   ansible.windows.win_dns_client:
     adapter_names: '*'
     dns_servers:
-      - 10.{{ lan_octet }}.1.2
+      - '{{ ansible_host }}'
 - name: Create AD-integrated reverse DNS zone
   ansible.windows.win_dns_zone:
-    name: 1.{{ lan_octet }}.10.in-addr.arpa
+    name: '{{ lan_octet }}.0.10.in-addr.arpa'
     type: primary
     replication: forest
     state: present

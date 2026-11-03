@@ -86,7 +86,7 @@
 #Debian uses sudo group for users with sudo perms
 - name: Add greyteam user to sudo group (Debian-based)
   ansible.builtin.user:
-      name: username_here
+      name: greyteam
       groups: sudo
       append: yes
   when: ansible_os_family == "Debian"
@@ -94,7 +94,7 @@
 # RHEL-based systems use wheel for users that can sudo
 - name: Add user to wheel group (RHEL-based)
   ansible.builtin.user:
-    name: username_here
+    name: greyteam
     groups: wheel
     append: yes
   when: ansible_os_family == "RedHat"

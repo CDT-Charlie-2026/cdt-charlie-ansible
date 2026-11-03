@@ -1,0 +1,22 @@
+---
+# windows.yaml
+
+- name: Install AD DNS
+  hosts: ad_dns
+  roles:
+    - ad_dns
+
+- name: Install ICMP
+  hosts: icmp
+  roles:
+    - icmp
+
+- name: Install IIS
+  hosts: iis
+  roles:
+    - iis
+
+- name: Install WinRM
+  hosts: winrm
+  roles:
+    - winrm

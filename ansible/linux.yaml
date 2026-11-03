@@ -1,0 +1,41 @@
+---
+# linux.yaml
+- name: Install Apache
+  hosts: apache
+  roles:
+    - apache
+
+- name: Install FTP
+  hosts: ftp
+  roles:
+    - ftp
+
+- name: Install Mail Server
+  hosts: mail_server
+  roles:
+    - mail_server
+
+- name: Install MySQL
+  hosts: mysql
+  roles:
+    - mysql
+
+- name: Install PAM
+  hosts: pam
+  roles:
+    - pam
+
+- name: Install Samba
+  hosts: samba
+  roles:
+    - samba
+
+- name: Install SSH
+  hosts: ssh
+  roles:
+    - ssh
+
+- name: Install Telnet
+  hosts: telnet
+  roles:
+    - telnet

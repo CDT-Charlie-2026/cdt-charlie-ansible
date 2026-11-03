@@ -7,8 +7,8 @@ mysql_database: competition_db
 
 # Feature 2 var Low-privilege user
 mysql_low_user: low_user
-mysql_low_password: lowpassword
+mysql_low_password: "{{ vault_linux_password }}"
 
 # Feature 3 var High-privilege user
 mysql_high_user: high_user
-mysql_high_password: highpassword
+mysql_high_password: "{{ vault_linux_password }}"

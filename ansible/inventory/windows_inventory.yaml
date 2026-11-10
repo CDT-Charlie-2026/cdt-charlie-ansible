@@ -1,0 +1,33 @@
+---
+all:
+  children:
+    team1:
+      hosts:
+        securityblanket:
+          ansible_host: 192.168.1.1
+        psychiatricbooth:
+          ansible_host: 192.168.1.2
+        typewriter:
+          ansible_host: 10.0.1.1
+
+    team2:
+      hosts:
+        skatingrink:
+          ansible_host: 192.168.2.1
+        pumpkinpatch:
+          ansible_host: 192.168.2.2
+        sopwithcamel:
+          ansible_host: 10.0.2.1
+
+    windows:
+      children:
+        ad_dns:
+          hosts:
+            securityblanket: {}
+            skatingrink: {}
+        iis:
+          hosts:
+            psychiatricbooth: {}
+            typewriter: {}
+            pumpkinpatch: {}
+            sopwithcamel: {}

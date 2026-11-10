@@ -1,0 +1,33 @@
+---
+- name: Ensure this host has a domain join configuration
+  ansible.builtin.assert:
+    that:
+      - inventory_hostname in domain_join_host_team
+    fail_msg: "No domain join configuration for {{ inventory_hostname }}. Check roles/windows_domain_join/vars/main.yml."
+
+- name: Set DNS to the team's domain controller
+  ansible.windows.win_dns_client:
+    adapter_names: '*'
+    dns_servers:
+      - "{{ domain_join_teams[domain_join_host_team[inventory_hostname]].dns_server }}"
+
+- name: Join the correct Active Directory domain and reboot if required
+  microsoft.ad.membership:
+    dns_domain_name: "{{ domain_join_teams[domain_join_host_team[inventory_hostname]].domain }}"
+    domain_admin_user: "{{ domain_join_teams[domain_join_host_team[inventory_hostname]].admin_user }}"
+    domain_admin_password: "{{ domain_join_teams[domain_join_host_team[inventory_hostname]].admin_password }}"
+    state: domain
+    reboot: true
+  no_log: true
+
+- name: Check domain membership
+  ansible.windows.win_shell: '(Get-CimInstance Win32_ComputerSystem).Domain'
+  register: current_domain
+  changed_when: false
+
+- name: Verify Windows joined the expected domain
+  ansible.builtin.assert:
+    that:
+      - "(current_domain.stdout | trim | lower) == (domain_join_teams[domain_join_host_team[inventory_hostname]].domain | lower)"
+    fail_msg: "{{ inventory_hostname }} did not report the expected Active Directory domain."
+    success_msg: "{{ inventory_hostname }} reports the expected Active Directory domain."

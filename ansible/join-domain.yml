@@ -1,0 +1,8 @@
+---
+# Run from your repository's ansible/ directory.
+# The domain controllers (securityblanket and skatingrink) are deliberately excluded.
+- name: Join Windows member hosts to their team Active Directory domains
+  hosts: psychiatricbooth:typewriter:pumpkinpatch:sopwithcamel
+  gather_facts: false
+  roles:
+    - windows_domain_join

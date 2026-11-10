@@ -1,6 +1,6 @@
 ---
 ansible_connection: ssh
-ansible_user: charliebrown
+ansible_user: grayteam
 ansible_become: true
 ansible_become_method: sudo
 ansible_password: "{{ vault_linux_password }}"

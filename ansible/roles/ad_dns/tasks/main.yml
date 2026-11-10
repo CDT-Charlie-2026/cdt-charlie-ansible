@@ -10,18 +10,19 @@
 - name: Reboot if AD DS feature installation requires it
   ansible.windows.win_reboot: null
   when: ad_features.reboot_required
-- name: Create or ensure peanuts.local forest exists
+- name: Create or ensure team0Xpeanuts.local forest exists
   microsoft.ad.domain:
-    dns_domain_name: peanuts.local
-    domain_netbios_name: PEANUTS
+    dns_domain_name: "{{ domain_name }}"
+    domain_netbios_name: "{{ netbios_name }}"
     safe_mode_password: '{{ ad_safe_mode_password }}' # From the vault
     reboot: true
-  no_log: true
+
 - name: Set domain controller's DNS client to itself
   ansible.windows.win_dns_client:
     adapter_names: '*'
     dns_servers:
       - '{{ ansible_host }}'
+        
 - name: Create AD-integrated reverse DNS zone
   ansible.windows.win_dns_zone:
     name: '{{ lan_octet }}.0.10.in-addr.arpa'
@@ -30,16 +31,16 @@
     state: present
 
 - name: Create all 10 domain users
-    microsoft.ad.user:
-      identity: "{{ item }}"
-      sam_account_name: "{{ item }}"
-      upn: "{{ item }}@{{ domain_name }}"
-      password: "{{ user_password }}"
-      update_password: on_create
-      enabled: true
-      state: present
-    loop: "{{ admin_users + normal_users }}"
-    no_log: true
+  microsoft.ad.user:
+    identity: "{{ item }}"
+    sam_account_name: "{{ item }}"
+    upn: "{{ item }}@{{ domain_name }}"
+    password: "{{ user_password }}"
+    update_password: on_create
+    enabled: true
+    state: present
+  loop: "{{ admin_users + domain_users }}"
+  
 
 - name: Add admins to Domain Admins
   microsoft.ad.group:
@@ -54,5 +55,5 @@
     identity: Domain Admins
     scope: global
     members:
-      remove: "{{ normal_users }}"
-    state:present
+      remove: "{{ domain_users }}"
+    state: present

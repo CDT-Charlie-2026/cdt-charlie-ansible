@@ -1,9 +1,9 @@
 ---
 # Change for team 
-domain_name: team2.peanuts.local
-
+domain_name: team1.peanuts.local
+netbios_name: TEAM1PEANUTS
 # Initial password
-initial_user_password: GoodGrief123!
+user_password: GoodGrief123!
 
 admin_users:
   - charliebrown

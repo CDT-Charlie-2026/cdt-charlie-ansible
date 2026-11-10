@@ -1,0 +1,22 @@
+---
+# Change for team 
+domain_name: team2.peanuts.local
+
+# Initial password
+initial_user_password: GoodGrief123!
+
+admin_users:
+  - charliebrown
+  - lucyvanpelt
+  - linusvanpelt
+  - peppermintpatty
+  - marcie
+  - grayteam
+  - violetgray
+
+domain_users:
+  - snoopy
+  - woodstock
+  - sallybrown
+  - schroeder
+  - pigpen

@@ -28,3 +28,31 @@
     type: primary
     replication: forest
     state: present
+
+- name: Create all 10 domain users
+    microsoft.ad.user:
+      identity: "{{ item }}"
+      sam_account_name: "{{ item }}"
+      upn: "{{ item }}@{{ domain_name }}"
+      password: "{{ user_password }}"
+      update_password: on_create
+      enabled: true
+      state: present
+    loop: "{{ admin_users + normal_users }}"
+    no_log: true
+
+- name: Add admins to Domain Admins
+  microsoft.ad.group:
+    identity: Domain Admins
+    scope: global
+    members:
+      add: "{{ admin_users }}"
+    state: present
+
+- name: Remove normal users from Admins
+  microsoft.ad.group:
+    identity: Domain Admins
+    scope: global
+    members:
+      remove: "{{ normal_users }}"
+    state:present

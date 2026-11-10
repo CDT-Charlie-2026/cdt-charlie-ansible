@@ -1,61 +1,27 @@
 ---
 # linux.yaml
-- name: Install Apache
-  hosts: apache
-  roles:
-    - apache
-  tags:
-    - apache
 
-- name: Install FTP
-  hosts: ftp
-  roles:
-    - ftp
-  tags:
-    - ftp
-
-- name: Install Mail Server
-  hosts: mail_server
+- name: Install smtp
+  hosts: smtp
   roles:
     - mail_server
-  tags:
-    - mail_server
-    - smtp 
-    - email
 
-- name: Install MySQL
+- name: Install mysql
   hosts: mysql
   roles:
     - mysql
-  tags:
-    - mysql
-    - database
 
-- name: Install PAM
-  hosts: pam
-  roles:
-    - pam
-  tags: 
-    - pam
-
-- name: Install Samba
+- name: Install samba
   hosts: samba
   roles:
     - samba
-  tags:
-    - samba
-    - smb
 
-- name: Install SSH
-  hosts: ssh
+- name: Install apache_docker
+  hosts: apache_docker
+  roles:
+    - apache
+
+- name: Install ssh
+  hosts: all
   roles:
     - ssh
-  tags:
-    - ssh
-
-- name: Install Telnet
-  hosts: telnet
-  roles:
-    - telnet
-  tags:
-    - telnet

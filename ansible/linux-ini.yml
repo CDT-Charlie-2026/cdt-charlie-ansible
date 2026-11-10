@@ -1,0 +1,69 @@
+# CDT Peanuts - Linux inventory (Ubuntu 24.04 LTS hosts only)
+# Usage: ansible -i inventory.yml linux -m ping
+# Requires sshpass on the control node for password auth.
+
+all:
+  vars:
+    ansible_user: grayteam
+    ansible_password: "GreatPumpkin321!"
+    ansible_become: true
+    ansible_become_method: sudo
+    ansible_become_password: "GreatPumpkin321!"
+    ansible_python_interpreter: auto_silent
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+  children:
+    linux:
+      children:
+        team1:
+        team2:
+
+    # ---------- Blue Team 1: Charlie Brown's Gang (TEAM1.PEANUTS.LOCAL) ----------
+    team1:
+      children:
+        team1_local:
+          hosts:
+            kitetree:
+              ansible_host: 192.168.1.3
+            toypiano:
+              ansible_host: 192.168.1.4
+            doghouse:
+              ansible_host: 192.168.1.5
+        team1_cloud:
+          hosts:
+            snowman:
+              ansible_host: 10.0.1.2
+
+    # ---------- Blue Team 2: Lucy's Psychiatric Help Club (TEAM2.PEANUTS.LOCAL) ----------
+    team2:
+      children:
+        team2_local:
+          hosts:
+            brickwall:
+              ansible_host: 192.168.2.3
+            birdbath:
+              ansible_host: 192.168.2.4
+            classroom:
+              ansible_host: 192.168.2.5
+        team2_cloud:
+          hosts:
+            pitchersmound:
+              ansible_host: 10.0.2.2
+
+    # ---------- Grouped by scored service ----------
+    mysql:
+      hosts:
+        kitetree:
+        brickwall:
+    smtp:
+      hosts:
+        toypiano:
+        birdbath:
+    apache_docker:
+      hosts:
+        doghouse:
+        classroom:
+    samba:
+      hosts:
+        snowman:
+        pitchersmound:

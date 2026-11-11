@@ -36,10 +36,6 @@
     state: present
     login_unix_socket: /var/run/mysqld/mysqld.sock
 
-- name: Provision the competition scorecard
-  ansible.builtin.import_tasks: scorecard.yml
-  tags: [mysql_scorecard]
-
 - name: Create packet MySQL users
   community.mysql.mysql_user:
     name: "{{ item.0.name }}"
@@ -52,6 +48,7 @@
   no_log: true
 
 - name: Check whether the Sandlot scorecard already exists
+  tags: [mysql_scorecard]
   community.mysql.mysql_query:
     login_unix_socket: /var/run/mysqld/mysqld.sock
     login_db: "{{ mysql_database }}"
@@ -63,6 +60,7 @@
   when: not ansible_check_mode
 
 - name: Create and seed a new Sandlot scorecard
+  tags: [mysql_scorecard]
   community.mysql.mysql_query:
     login_unix_socket: /var/run/mysqld/mysqld.sock
     login_db: "{{ mysql_database }}"

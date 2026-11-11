@@ -1,0 +1,25 @@
+# Disable anonymous FTP access
+anonymous_enable=NO
+
+# Allow local users to authenticate
+local_enable=YES
+
+# Allow authenticated users to upload files
+write_enable=YES
+
+# Restrict users to their FTP directory
+chroot_local_user=YES
+
+# Set the FTP user's root directory
+local_root={{ ftp_home }}
+
+# Allow the chroot directory to be writable
+allow_writeable_chroot=YES
+
+# Use the standard vsftpd PAM configuration
+pam_service_name=vsftpd
+
+# Only packet accounts may authenticate.
+userlist_enable=YES
+userlist_deny=NO
+userlist_file=/etc/vsftpd.packet-users

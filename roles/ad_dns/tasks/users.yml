@@ -1,0 +1,24 @@
+---
+- name: Ensure gray team domain group exists
+  microsoft.ad.group:
+    identity: "{{ competition_gray_team_group }}"
+    scope: global
+    category: security
+    state: present
+
+- name: Ensure competition domain users exist
+  microsoft.ad.user:
+    identity: "{{ item.name }}"
+    sam_account_name: "{{ item.name }}"
+    upn: "{{ item.name }}@{{ domain_name }}"
+    password: "{{ vault_windows_gray_team_password if item.gray_team else vault_windows_user_password }}"
+    update_password: on_create
+    enabled: true
+    state: present
+    groups:
+      add: "{{ ([competition_gray_team_group] if item.gray_team else []) + (['Domain Admins'] if item.admin else []) }}"
+      remove: "{{ ([] if item.gray_team else [competition_gray_team_group]) + ([] if item.admin else ['Domain Admins']) }}"
+  loop: "{{ competition_users | selectattr('windows_domain') | list }}"
+  loop_control:
+    label: "{{ item.name }}"
+  no_log: true

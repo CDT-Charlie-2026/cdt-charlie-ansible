@@ -1,0 +1,2 @@
+---
+# Domain settings come from team group_vars; passwords come from Vault.

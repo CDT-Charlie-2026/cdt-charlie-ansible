@@ -1,0 +1,30 @@
+---
+# linux.yaml
+
+- name: Provision Linux local users
+  hosts: linux
+  become: true
+  roles:
+    - role: linux_users
+      tags: [users]
+
+- name: Install mail_server
+  hosts: mail_server
+  roles:
+    - mail_server
+
+- name: Install mysql
+  hosts: mysql
+  roles:
+    - mysql
+
+- name: Install samba
+  hosts: samba
+  roles:
+    - samba
+
+- name: Install apache_docker
+  hosts: apache_docker
+  roles:
+    - apache
+

@@ -1,0 +1,55 @@
+---
+- name: Validate Linux family and account roster
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.os_family in linux_users_admin_groups
+      - competition_users | map(attribute='name') | unique | length == competition_users | length
+    fail_msg: Unsupported OS family or duplicate account names.
+
+- name: Install sudo
+  ansible.builtin.package:
+    name: sudo
+    state: present
+
+- name: Ensure managed account groups exist
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - "{{ linux_users_admin_groups[ansible_facts.os_family] }}"
+    - "{{ competition_gray_team_group }}"
+
+- name: Enable administrator group sudo access in sudoers
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    regexp: '^\s*#?\s*%{{ linux_users_admin_groups[ansible_facts.os_family] }}\s+ALL\s*=.*$'
+    line: "%{{ linux_users_admin_groups[ansible_facts.os_family] }} ALL=(ALL:ALL) ALL"
+    validate: /usr/sbin/visudo -cf %s
+
+- name: Create local competition users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    shell: "{{ user_shell }}"
+    groups: "{{ ([linux_users_admin_groups[ansible_facts.os_family]] if item.admin else []) + ([competition_gray_team_group] if item.gray_team else []) }}"
+    append: true
+    create_home: true
+    password: "{{ (vault_linux_gray_team_password if item.gray_team else vault_linux_user_password) | password_hash('sha512', 'peanutsalt') }}"
+    update_password: always
+    state: present
+  loop: "{{ competition_users }}"
+  no_log: true
+
+- name: Read current group membership
+  ansible.builtin.getent:
+    database: group
+
+- name: Remove managed non-admin users from the administrator group
+  ansible.builtin.command:
+    argv:
+      - gpasswd
+      - -d
+      - "{{ item.name }}"
+      - "{{ linux_users_admin_groups[ansible_facts.os_family] }}"
+  loop: "{{ competition_users | rejectattr('admin') | list }}"
+  when: item.name in ansible_facts.getent_group[linux_users_admin_groups[ansible_facts.os_family]][2].split(',')
+  changed_when: true

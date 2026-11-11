@@ -1,3 +1,0 @@
-## 🔵
-This directory contains the ansible script needed to deploy IIS to a remote Windows host, as well as configuring a local website with an index.html file and ensuring the service is running and set to auto start. It includes bonus functionality with making sure that Real Time Protection is enabled.
-## 🔵

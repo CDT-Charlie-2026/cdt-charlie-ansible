@@ -1,0 +1,5 @@
+---
+user_shell: /bin/bash
+linux_users_admin_groups:
+  Debian: sudo
+  RedHat: wheel

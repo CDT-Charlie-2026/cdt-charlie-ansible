@@ -1,0 +1,47 @@
+---
+# Role: pam
+# Author: Willis Martin wrm3207@rit.edu
+# Date: 9/11/2026
+#
+# CUSTOMIZATION NEEDED BEFORE RUNNING:
+#   - vars/main.yml: set `pam_min_length` / `pam_min_complexity_classes` for password requirments
+#   - vars/main.yml: set `pam_max_days` / `pam_warn_days` for password aging.
+#   - vars/main.yml: set pam_accounts_locked if accounts must be locked.
+
+    # Feature 1: Install the pwquality PAM module
+    - name: Install libpam-pwquality
+      apt:
+        name: libpam-pwquality
+        state: present
+        update_cache: yes
+
+    # Feature 2: Enforce complexity rules
+    - name: Deploy pwquality.conf with complexity requirements
+      template:
+        src: config.j2
+        dest: /etc/security/pwquality.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    # Feature 2b: Wire pwquality into the PAM stack
+    - name: Ensure pam_pwquality is enforced in common-password
+      lineinfile:
+        path: /etc/pam.d/common-password
+        regexp: '^password\s+requisite\s+pam_pwquality\.so'
+        line: "password requisite pam_pwquality.so retry=3"
+        insertbefore: '^password\s+\[success=1'
+        state: present
+
+    # Feature 3: Account management - create defender accounts, lock stale/unknown ones
+    - name: Lock accounts that should not have active access
+      user:
+        name: "{{ item }}"
+        password_lock: yes
+      loop: "{{ pam_accounts_locked }}"
+
+    # Feature 4: Password aging policy applied per-account
+    - name: Set password aging policy for existing accounts
+      command: "chage -M {{ pam_max_days }} -W {{ pam_warn_days }} {{ item }}"
+      loop: "{{ competition_users | map(attribute='name') | list }}"
+      changed_when: true  

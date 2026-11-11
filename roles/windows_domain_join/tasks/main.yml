@@ -1,0 +1,39 @@
+---
+- name: Validate team domain join configuration
+  ansible.builtin.assert:
+    that:
+      - inventory_hostname not in groups.get('ad_dns', [])
+      - domain_name is defined
+      - domain_controller_host is defined
+      - domain_controller_host in hostvars
+      - hostvars[domain_controller_host].ansible_host is defined
+      - domain_join_dns_server | length > 0
+      - vault_windows_gray_team_password is defined
+    fail_msg: "Check this host's team domain variables, controller inventory address, and gray team Vault password. Domain controllers must not run this role."
+
+- name: Set DNS to the team's domain controller
+  ansible.windows.win_dns_client:
+    adapter_names: '*'
+    dns_servers:
+      - "{{ domain_join_dns_server }}"
+
+- name: Join the correct Active Directory domain and reboot if required
+  microsoft.ad.membership:
+    dns_domain_name: "{{ domain_name }}"
+    domain_admin_user: "{{ domain_join_admin_user }}"
+    domain_admin_password: "{{ domain_join_admin_password }}"
+    state: domain
+    reboot: true
+  no_log: true
+
+- name: Check domain membership
+  ansible.windows.win_shell: '(Get-CimInstance Win32_ComputerSystem).Domain'
+  register: current_domain
+  changed_when: false
+
+- name: Verify Windows joined the expected domain
+  ansible.builtin.assert:
+    that:
+      - "(current_domain.stdout | trim | lower) == (domain_name | lower)"
+    fail_msg: "{{ inventory_hostname }} did not report the expected Active Directory domain."
+    success_msg: "{{ inventory_hostname }} reports the expected Active Directory domain."

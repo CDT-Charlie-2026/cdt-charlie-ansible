@@ -1,0 +1,19 @@
+---
+- name: Ensure local gray team group exists
+  ansible.windows.win_group:
+    name: "{{ competition_gray_team_group }}"
+    state: present
+
+- name: Create gray team local administrators on member servers
+  ansible.windows.win_user:
+    name: "{{ item.name }}"
+    password: "{{ vault_windows_gray_team_password if item.gray_team else vault_windows_user_password }}"
+    update_password: on_create
+    account_disabled: false
+    groups:
+      - S-1-5-32-544
+      - "{{ competition_gray_team_group }}"
+    groups_action: add
+    state: present
+  loop: "{{ competition_users | rejectattr('windows_domain') | selectattr('gray_team') | list }}"
+  no_log: true

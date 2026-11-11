@@ -1,0 +1,48 @@
+---
+# Debian/Ubuntu deployment. Requires community.mysql collection on controller.
+- name: Install MySQL and Python connector
+  ansible.builtin.apt:
+    name:
+      - "{{ mysql_package }}"
+      - python3-pymysql
+    state: present
+    update_cache: true
+
+- name: Enable MySQL TCP access for remote scoring
+  ansible.builtin.lineinfile:
+    path: "{{ mysql_config_file }}"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    insertafter: '^\[mysqld\]'
+  loop:
+    - regexp: '^\s*bind-address\s*='
+      line: "bind-address = {{ mysql_bind_address }}"
+    - regexp: '^\s*skip-networking(?:\s*=.*)?\s*$'
+      line: skip-networking = OFF
+  notify: Restart MySQL
+
+- name: Start MySQL service
+  ansible.builtin.service:
+    name: "{{ mysql_service }}"
+    state: started
+    enabled: true
+
+- name: Apply MySQL listener changes before provisioning accounts
+  ansible.builtin.meta: flush_handlers
+
+- name: Create competition database
+  community.mysql.mysql_db:
+    name: "{{ mysql_database }}"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Create packet MySQL users
+  community.mysql.mysql_user:
+    name: "{{ item.0.name }}"
+    host: "{{ item.1 }}"
+    password: "{{ vault_linux_gray_team_password if item.0.gray_team else vault_linux_user_password }}"
+    priv: "{{ mysql_database }}.*:{{ mysql_admin_privileges if item.0.admin else mysql_user_privileges }}"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  loop: "{{ competition_users | product(mysql_user_hosts) | list }}"
+  no_log: true

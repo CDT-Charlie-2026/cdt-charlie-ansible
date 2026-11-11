@@ -1,0 +1,104 @@
+---
+# Samba Deployment
+# Author: Braeden Villano (bcv4079@rit.edu)
+# Date: 9/10/2026
+- name: Install necessary packages (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name: 
+      - samba
+      - samba-common-bin
+      - smbclient
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+- name: Install necessary packages (Red Hat and RHEL-like)
+  ansible.builtin.dnf:
+    name:
+      - samba
+      - samba-common
+    state: present
+    update_cache: true
+  when: ansible_os_family == "RedHat"
+
+#Uses variables defined in vars/main.yml under Samba role
+- name: Ensure share directory exists
+  ansible.builtin.file:
+    path: "{{ smb_share_path }}"        
+    state: directory
+    owner: "nobody"
+    group: "nogroup"
+    mode: '0755'
+
+- name: Enable and start smbd service
+  ansible.builtin.service:
+    name: "smbd"
+    state: started
+    enabled: true
+
+#SMBD and NMBD are the two daemons for Samba (Server Message Block and NetBIOS Message Block)
+
+- name: Enable and start nmbd service
+  ansible.builtin.service:
+    name: "nmbd"
+    state: started
+    enabled: true
+
+#Copy over SMB config file
+- name: Deploy smb.conf
+  ansible.builtin.copy:
+    src: smb.conf
+    dest: /etc/samba/smb.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+#Restart services after config change to take effect
+
+- name: Restart SMBD service
+  ansible.builtin.service:
+    name: "smbd"
+    state: restarted
+
+- name: Restart NMBD service 
+  ansible.builtin.service:
+    name: "nmbd"
+    state: restarted
+
+
+# Feature 1: Copy over file with snoopy ASCII art which can be checked for scorecheck
+- name: Copy over scorecheck file
+  ansible.builtin.copy:
+    src: snoopy.txt
+    dest: "{{ smb_share_path }}/snoopy.txt"
+    owner: "nobody"
+    group: "nogroup"
+    mode: '0644'
+
+# Feature 3: Create smbusers group, add packet users to it, and set their Samba passwords
+# Linux accounts must already exist or smbpasswd -a will fail
+- name: Ensure smbusers group exists
+  ansible.builtin.group:
+    name: "smbusers"
+    state: present
+
+- name: Add packet users to smbusers group
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: "smbusers"
+    append: true   #append, don't replace existing group memberships
+  loop: "{{ competition_users | map(attribute='name') | list }}"
+
+- name: Set Samba passwords from the Linux Vault defaults
+  ansible.builtin.command:
+    argv:
+      - smbpasswd
+      - -a
+      - -s
+      - "{{ item.name }}"
+    stdin: "{{ account_password }}\n{{ account_password }}"
+  vars:
+    account_password: "{{ vault_linux_gray_team_password if item.gray_team else vault_linux_user_password }}"
+  loop: "{{ competition_users }}"
+  no_log: true
+  changed_when: true

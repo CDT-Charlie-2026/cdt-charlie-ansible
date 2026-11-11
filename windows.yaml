@@ -1,0 +1,25 @@
+---
+# windows.yaml
+
+- name: Install AD DNS
+  hosts: ad_dns
+  roles:
+    - ad_dns
+
+- name: Provision Windows member server local users
+  hosts: windows:!ad_dns
+  roles:
+    - role: windows_local_users
+      tags: [users]
+
+- name: Join Windows member servers to their team domains
+  hosts: windows:!ad_dns
+  gather_facts: false
+  roles:
+    - role: windows_domain_join
+      tags: [domain_join]
+
+- name: Install IIS
+  hosts: iis
+  roles:
+    - iis

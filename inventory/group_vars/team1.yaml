@@ -1,0 +1,10 @@
+---
+team_number: 1
+lan_octet: 1
+domain_name: team1.peanuts.local
+netbios_name: TEAM1PEANUTS
+domain_controller_host: securityblanket
+# /24 reverse zones for LAN 192.168.1.0/24 and cloud 10.0.1.0/24.
+ad_reverse_lookup_zones:
+  - 1.168.192.in-addr.arpa
+  - 1.0.10.in-addr.arpa

@@ -1,0 +1,3 @@
+---
+# Team settings live in inventory/group_vars/team*.yaml.
+# Override join settings through inventory; see defaults/main.yml.

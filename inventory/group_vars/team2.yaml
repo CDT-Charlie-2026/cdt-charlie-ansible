@@ -1,0 +1,10 @@
+---
+team_number: 2
+lan_octet: 2
+domain_name: team2.peanuts.local
+netbios_name: TEAM2PEANUTS
+domain_controller_host: skatingrink
+# /24 reverse zones for LAN 192.168.2.0/24 and cloud 10.0.2.0/24.
+ad_reverse_lookup_zones:
+  - 2.168.192.in-addr.arpa
+  - 2.0.10.in-addr.arpa

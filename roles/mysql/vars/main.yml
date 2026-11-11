@@ -1,0 +1,13 @@
+---
+mysql_package: mysql-server
+mysql_service: mysql
+mysql_database: competition_db
+# Database-scoped permissions; packet admins do not receive global DBA access.
+mysql_user_privileges: SELECT
+mysql_admin_privileges: SELECT,INSERT,UPDATE,DELETE
+# Accept TCP clients for remote scoring; retain local packet accounts too.
+mysql_bind_address: 0.0.0.0
+mysql_config_file: /etc/mysql/mysql.conf.d/mysqld.cnf
+mysql_user_hosts:
+  - localhost
+  - '%'

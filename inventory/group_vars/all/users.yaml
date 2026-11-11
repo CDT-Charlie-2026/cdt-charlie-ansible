@@ -1,0 +1,56 @@
+---
+# Shared roster: Linux accounts are always local.
+competition_gray_team_group: grayteam_users
+competition_users:
+- name: charliebrown
+  admin: true
+  gray_team: false
+  windows_domain: true
+- name: lucyvanpelt
+  admin: true
+  gray_team: false
+  windows_domain: true
+- name: linusvanpelt
+  admin: true
+  gray_team: false
+  windows_domain: true
+- name: peppermintpatty
+  admin: true
+  gray_team: false
+  windows_domain: true
+- name: marcie
+  admin: true
+  gray_team: false
+  windows_domain: true
+- name: snoopy
+  admin: false
+  gray_team: false
+  windows_domain: true
+- name: woodstock
+  admin: false
+  gray_team: false
+  windows_domain: true
+- name: sallybrown
+  admin: false
+  gray_team: false
+  windows_domain: true
+- name: schroeder
+  admin: false
+  gray_team: false
+  windows_domain: true
+- name: pigpen
+  admin: false
+  gray_team: false
+  windows_domain: true
+- name: grayteam
+  admin: true
+  gray_team: true
+  windows_domain: true
+- name: violetgray
+  admin: true
+  gray_team: true
+  windows_domain: true
+- name: othergrayteam
+  admin: true
+  gray_team: true
+  windows_domain: false

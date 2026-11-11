@@ -1,0 +1,5 @@
+---
+# Use the same team domain and controller address as the rest of the deployment.
+domain_join_dns_server: "{{ hostvars[domain_controller_host].ansible_host }}"
+domain_join_admin_user: "grayteam@{{ domain_name }}"
+domain_join_admin_password: "{{ vault_windows_gray_team_password }}"

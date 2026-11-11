@@ -36,6 +36,10 @@
     state: present
     login_unix_socket: /var/run/mysqld/mysqld.sock
 
+- name: Provision the competition scorecard
+  ansible.builtin.import_tasks: scorecard.yml
+  tags: [mysql_scorecard]
+
 - name: Create packet MySQL users
   community.mysql.mysql_user:
     name: "{{ item.0.name }}"

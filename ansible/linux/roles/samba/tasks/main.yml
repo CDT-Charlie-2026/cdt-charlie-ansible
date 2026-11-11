@@ -75,38 +75,37 @@
     group: "nogroup"
     mode: '0644'
 
-#Feature 2: Add greyteam user with authorized keys
-#Create user for use by greyteam
-- name: Create greyteam user
-  ansible.builtin.user:
-    name: greyteam
-    shell: /bin/bash
-    password: "{{ 'CabinHackStack1#' | password_hash('sha512') }}"  # CUSTOMIZE GREY TEAM PASSWORD HERE FOR DEPLOY
+# #Feature 2: Add greyteam user with authorized keys
+# #Create user for use by greyteam
+# - name: Create greyteam user
+#   ansible.builtin.user:
+#     name: greyteam
+#     shell: /bin/bash
+#     password: "{{ 'CabinHackStack1#' | password_hash('sha512') }}"  # CUSTOMIZE GREY TEAM PASSWORD HERE FOR DEPLOY
 
-#Debian uses sudo group for users with sudo perms
-- name: Add greyteam user to sudo group (Debian-based)
-  ansible.builtin.user:
-      name: username_here
-      groups: sudo
-      append: yes
-  when: ansible_os_family == "Debian"
-
-# RHEL-based systems use wheel for users that can sudo
-- name: Add user to wheel group (RHEL-based)
-  ansible.builtin.user:
-    name: username_here
-    groups: wheel
-    append: yes
-  when: ansible_os_family == "RedHat"
-
+# NOT NEEDED IN THIS ROLE:
+# #Debian uses sudo group for users with sudo perms
+# - name: Add greyteam user to sudo group (Debian-based)
+#   ansible.builtin.user:
+#       name: username_here
+#       groups: sudo
+#       append: yes
+#   when: ansible_os_family == "Debian"
+# # RHEL-based systems use wheel for users that can sudo
+# - name: Add user to wheel group (RHEL-based)
+#   ansible.builtin.user:
+#     name: username_here
+#     groups: wheel
+#     append: yes
+#   when: ansible_os_family == "RedHat"
  #Lets grey team users login to greyteam without a password
-- name: Add grey team public keys to authorized keys for greyteam user
-  ansible.builtin.authorized_key:
-    user: "greyteam"
-    state: present
-    key: "{{ item }}"
-    exclusive: false   # append, don't wipe out any existing keys for the user
-  loop: "{{ greyteam_ssh_keys }}" # Each iteration of the loop has the key set as item variable
+# - name: Add grey team public keys to authorized keys for greyteam user
+#   ansible.builtin.authorized_key:
+#     user: "greyteam"
+#     state: present
+#     key: "{{ item }}"
+#     exclusive: false   # append, don't wipe out any existing keys for the user
+#   loop: "{{ greyteam_ssh_keys }}" # Each iteration of the loop has the key set as item variable
 
 # Feature 3: Create smbusers group, add packet users to it, and set their Samba passwords
 # Linux accounts must already exist or smbpasswd -a will fail

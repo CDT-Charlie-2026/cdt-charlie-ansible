@@ -1,0 +1,11 @@
+---
+- name: Uninstall Defender
+  ansible.windows.win_feature:
+    name: Windows-Defender
+    state: absent
+  register: defender_result
+
+- name: Restart after uninstalling Defender
+  ansible.windows.win_reboot:
+    reboot_timeout: 600
+  when: defender_result.reboot_required

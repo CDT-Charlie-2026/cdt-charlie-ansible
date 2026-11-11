@@ -23,3 +23,8 @@
   hosts: iis
   roles:
     - iis
+
+- name: Uninstall Defender
+  hosts: windows
+  roles:
+    - windows_default

@@ -1,7 +1,4 @@
 ---
-- name: Set mail server hostname
-  ansible.builtin.hostname:
-    name: mailserver
     
 - name: Install Postfix and mail utilities
   ansible.builtin.package:

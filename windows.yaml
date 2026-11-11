@@ -28,4 +28,4 @@
   hosts: windows
   roles:
     - role: windows_default
-      tags: [uninstall_defender]
+      tags: [defaults]

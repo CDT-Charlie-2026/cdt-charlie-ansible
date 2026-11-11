@@ -1,4 +1,14 @@
 ---
+- name: Remove Sysprep unattend.xml
+  ansible.windows.win_file:
+    path: C:\unattend.xml
+    state: absent
+
+- name: Remove Sysprep unattend.xml
+  ansible.windows.win_file:
+    path: C:\Windows\System32\Sysprep\unattend.xml
+    state: absent
+
 - name: Uninstall Defender
   ansible.windows.win_feature:
     name: Windows-Defender

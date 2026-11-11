@@ -1,12 +1,9 @@
 ---
 postfix_main_cf:
-  myhostname: mailserver.peanuts.local
-  mydomain: peanuts.local
-  myorigin: peanuts.local
-  mydestination: mailserver.peanuts.local, localhost.peanuts.local, peanuts.local
+  myhostname: "{{ ansible_fqdn }}"
+  mydomain: "{{ ansible_fqdn }}"
+  myorigin: "{{ ansible_fqdn }}"
+  mydestination: $hostname, localhost.$mydomain, $mydomain
   mynetworks: 127.0.0.0/8 [::1]/128
   inet_interfaces: all
   inet_protocols: ipv4
-  smtpd_tls_cert_file: /etc/ssl/certs/ssl-cert-snakeoil.pem
-  smtpd_tls_key_file: /etc/ssl/private/ssl-cert-snakeoil.key
-  smtpd_use_tls: 'yes'

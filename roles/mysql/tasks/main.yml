@@ -50,3 +50,49 @@
     login_unix_socket: /var/run/mysqld/mysqld.sock
   loop: "{{ competition_users | product(mysql_user_hosts) | list }}"
   no_log: true
+
+- name: Check whether the Sandlot scorecard already exists
+  community.mysql.mysql_query:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    login_db: "{{ mysql_database }}"
+    query: >-
+      SELECT COUNT(*) AS table_count FROM information_schema.tables
+      WHERE table_schema = DATABASE() AND table_name = 'sandlot_scorecard'
+  register: mysql_scorecard_existing
+  changed_when: false
+  when: not ansible_check_mode
+
+- name: Create and seed a new Sandlot scorecard
+  community.mysql.mysql_query:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    login_db: "{{ mysql_database }}"
+    query:
+      - >-
+        CREATE TABLE sandlot_scorecard (
+          id INT NOT NULL PRIMARY KEY,
+          player VARCHAR(64) NOT NULL,
+          singles INT NOT NULL,
+          doubles INT NOT NULL,
+          triples INT NOT NULL,
+          home_runs INT NOT NULL,
+          total_bases BIGINT NOT NULL,
+          scorecard_status VARCHAR(4) GENERATED ALWAYS AS (
+            CASE WHEN singles >= 0 AND doubles >= 0 AND triples >= 0 AND home_runs >= 0
+              AND total_bases = CAST(singles AS SIGNED)
+                + 2 * CAST(doubles AS SIGNED) + 3 * CAST(triples AS SIGNED)
+                + 4 * CAST(home_runs AS SIGNED)
+            THEN 'PASS' ELSE 'FAIL' END
+          ) STORED
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+      - >-
+        INSERT INTO sandlot_scorecard
+          (id, player, singles, doubles, triples, home_runs, total_bases)
+        VALUES
+          (1, 'Charlie Brown', 2, 1, 0, 1, 8),
+          (2, 'Lucy van Pelt', 1, 2, 0, 0, 5),
+          (3, 'Linus van Pelt', 3, 0, 1, 0, 6),
+          (4, 'Schroeder', 0, 1, 1, 1, 9),
+          (5, 'Peppermint Patty', 2, 1, 1, 2, 15)
+  when:
+    - not ansible_check_mode
+    - (mysql_scorecard_existing.query_result[0][0].table_count | int) == 0

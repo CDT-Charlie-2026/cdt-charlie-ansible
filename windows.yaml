@@ -27,4 +27,5 @@
 - name: Uninstall Defender
   hosts: windows
   roles:
-    - windows_default
+    - role: windows_default
+      tags: [uninstall_defender]

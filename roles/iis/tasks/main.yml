@@ -4,7 +4,8 @@
     name: Web-Server
     state: present
     include_management_tools: true
-  
+  register: iis_install
+
 - name: Reboot if IIS installation requires it
   ansible.windows.win_reboot: null
   when: iis_install.reboot_required

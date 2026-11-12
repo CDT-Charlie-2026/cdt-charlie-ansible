@@ -31,7 +31,6 @@
     - role: cloud_iis
       tags: [cloud_iis]
   
-    
 - name: Uninstall Defender
   hosts: windows
   roles:

@@ -24,7 +24,6 @@
     domain_admin_password: "{{ domain_join_admin_password }}"
     state: domain
     reboot: true
-  no_log: true
 
 - name: Check domain membership
   ansible.windows.win_shell: '(Get-CimInstance Win32_ComputerSystem).Domain'

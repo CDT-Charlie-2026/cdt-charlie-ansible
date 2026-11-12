@@ -20,14 +20,17 @@
       tags: [domain_join]
 
 - name: Install IIS on LAN
-  hosts: iis
+  hosts: lan_iis
   roles:
-    - iis
+    - role: iis
+      tags: [iis]
 
 - name: Install IIS on cloud
   hosts: cloud_iis
   roles:
-    - cloud_iis
+    - role: cloud_iis
+      tags: [cloud_iis]
+  
     
 - name: Uninstall Defender
   hosts: windows

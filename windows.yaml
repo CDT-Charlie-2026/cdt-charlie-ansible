@@ -19,11 +19,16 @@
     - role: windows_domain_join
       tags: [domain_join]
 
-- name: Install IIS
+- name: Install IIS on LAN
   hosts: iis
   roles:
     - iis
 
+- name: Install IIS on cloud
+  hosts: cloud_iis
+  roles:
+    - cloud_iis
+    
 - name: Uninstall Defender
   hosts: windows
   roles:

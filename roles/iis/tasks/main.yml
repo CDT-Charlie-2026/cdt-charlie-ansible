@@ -5,19 +5,33 @@
     state: present
     include_management_tools: true
   register: iis_install
+  tags:
+    - iis
+  
 - name: Reboot if IIS installation requires it
   ansible.windows.win_reboot: null
   when: iis_install.reboot_required
+  tags:
+    - iis
+  
 - name: Deploy website index page
   ansible.windows.win_copy:
     src: index.html
     dest: C:\inetpub\wwwroot\index.html
+    tags:
+    - iis
+    
 - name: Deploy website image
   ansible.windows.win_copy:
     src: Snoopy.png
     dest: C:\inetpub\wwwroot\Snoopy.png
+    tags:
+    - iis
+    
 - name: Enable and start IIS
   ansible.windows.win_service:
     name: W3SVC
     start_mode: auto
     state: started
+    tags:
+    - iis

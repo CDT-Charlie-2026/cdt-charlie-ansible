@@ -23,7 +23,7 @@
   hosts: lan_iis
   roles:
     - role: iis
-      tags: [iis]
+      tags: [lan_iis]
 
 - name: Install IIS on cloud
   hosts: cloud_iis

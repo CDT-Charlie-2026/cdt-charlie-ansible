@@ -1,46 +1,28 @@
 ---
-    
+- name: Validate team mail domain
+  ansible.builtin.assert:
+    that:
+      - domain_name is defined
+      - (domain_name | default('') | trim | length) > 0
+    fail_msg: Define the team domain_name before provisioning mail.
+
 - name: Install Postfix and mail utilities
   ansible.builtin.package:
     name:
       - postfix
       - mailutils
     state: present
-    
+
 - name: Configure Postfix
   ansible.builtin.lineinfile:
     path: /etc/postfix/main.cf
-    regexp: ^{{ item.key }}\s*=
+    regexp: '^\s*{{ item.key | regex_escape }}\s*='
     line: '{{ item.key }} = {{ item.value }}'
   loop: '{{ postfix_main_cf | dict2items }}'
   notify: Restart Postfix
-  
+
 - name: Enable Postfix
   ansible.builtin.service:
     name: postfix
     state: started
     enabled: true
-    
-- name: Install Dovecot
-  ansible.builtin.package:
-    name:
-      - dovecot-core
-      - dovecot-imapd
-      - dovecot-pop3d
-    state: present
-    
-- name: Deploy Dovecot configuration
-  ansible.builtin.template:
-    src: dovecot_conf.j2
-    dest: /etc/dovecot/conf.d/10-mail.conf
-    mode: '0644'
-    
-  notify: Restart Dovecot
-- name: Enable Dovecot
-  ansible.builtin.service:
-    name: dovecot
-    state: started
-    enabled: true
-    
-
-

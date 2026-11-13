@@ -1,9 +1,15 @@
 ---
 postfix_main_cf:
   myhostname: "{{ ansible_fqdn }}"
-  mydomain: "{{ ansible_fqdn }}"
-  myorigin: "{{ ansible_fqdn }}"
-  mydestination: $hostname, localhost.$mydomain, $mydomain
+  mydomain: "{{ domain_name }}"
+  myorigin: "{{ domain_name }}"
+  mydestination: $myhostname, localhost.$mydomain, localhost, $mydomain
   mynetworks: 127.0.0.0/8 [::1]/128
   inet_interfaces: all
   inet_protocols: ipv4
+  home_mailbox: Maildir/
+  mailbox_transport: ''
+  mailbox_command: ''
+  smtpd_sasl_auth_enable: 'no'
+  smtpd_tls_security_level: none
+  smtpd_use_tls: 'no'
